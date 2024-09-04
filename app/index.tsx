@@ -1,11 +1,14 @@
 import { WebView } from "react-native-webview";
-import Constants from "expo-constants";
 import { StyleSheet } from "react-native";
 export default function Index() {
   return (
     <WebView
       style={styles.container}
-      source={{ uri: "https://comuline-web.vercel.app" }}
+      source={{
+        uri:
+          process.env.EXPO_PUBLIC_WEBVIEW_URI ||
+          "https://comuline-web.vercel.app/",
+      }}
     />
   );
 }
