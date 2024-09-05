@@ -1,11 +1,14 @@
-import { WebView, WebViewMessageEvent } from "react-native-webview";
-import { StyleSheet } from "react-native";
+import { WebViewMessageEvent } from "react-native-webview";
 import notifee, {
   TimestampTrigger,
   TriggerType,
   RepeatFrequency,
+  AndroidNotificationSetting,
+  Notification,
 } from "@notifee/react-native";
 import dayjs from "dayjs";
+import { useEffect } from "react";
+import WebContainer from "@/components/WebContainer";
 
 interface Schedule {
   id: string;
@@ -43,32 +46,52 @@ const setReminder = async (payload: ReminderPayload) => {
   const date = dayjs()
     .set("hour", Number(hour))
     .set("minute", Number(minute))
-    .add(1, "day")
     .subtract(beforeMinutes + 1, "minute");
 
   const trigger: TimestampTrigger = {
     type: TriggerType.TIMESTAMP,
-    timestamp: date.toDate().getTime(), // fire in 3 hours
+    timestamp: date.toDate().getTime(),
     repeatFrequency: RepeatFrequency.DAILY,
+    alarmManager: {
+      allowWhileIdle: true,
+    },
   };
 
-  await notifee.createTriggerNotification(
-    {
-      id: schedule.id,
-      title: `Train From ${station.name} to ${capitalize(
-        schedule.destination
-      )}`,
-      body: `Will be arrived in ${station.name} at ${
-        schedule.timeEstimated
-      } WIB (in ${beforeMinutes === 0 ? 1 : beforeMinutes} minutes).`,
-      subtitle: "Train Reminder",
-      android: {
-        channelId,
-        smallIcon: "notification_icon",
-      },
+  const notificationPayload: Notification = {
+    id: schedule.id,
+    title: `Train From ${station.name} to ${capitalize(schedule.destination)}`,
+    body: `Will be arrived in ${station.name} at ${schedule.timeEstimated} WIB`,
+    subtitle: "Train Reminder",
+    android: {
+      channelId,
+      smallIcon: "notification_icon",
     },
-    trigger
-  );
+  };
+
+  try {
+    await notifee.createTriggerNotification(notificationPayload, trigger);
+  } catch (err) {
+    const errMessage = (err as Error).message;
+    switch (errMessage) {
+      case "notifee.createTriggerNotification(*) 'trigger.timestamp' date must be in the future.":
+        //1. add one day
+        const modifiedTrigger: TimestampTrigger = {
+          ...trigger,
+          timestamp: date.add(1, "day").toDate().getTime(),
+        };
+        //2. create trigger
+        await notifee.createTriggerNotification(
+          notificationPayload,
+          modifiedTrigger
+        );
+        //3. fire notification immediatelly
+        await notifee.displayNotification(notificationPayload);
+        break;
+
+      default:
+        break;
+    }
+  }
 };
 
 const unsetReminder = async (payload: ReminderPayload) => {
@@ -92,21 +115,23 @@ export default function Index() {
         break;
     }
   };
+  const requestAlarmSetings = async () => {
+    const settings = await notifee.getNotificationSettings();
+    if (settings.android.alarm !== AndroidNotificationSetting.ENABLED) {
+      await notifee.openAlarmPermissionSettings();
+    }
+  };
 
+  useEffect(() => {
+    requestAlarmSetings();
+  }, []);
   return (
-    <WebView
+    <WebContainer
       onMessage={handleMessage}
-      style={styles.container}
-      source={{
-        uri:
-          process.env.EXPO_PUBLIC_WEBVIEW_URI ||
-          "https://comuline-web.vercel.app/",
-      }}
+      url={
+        process.env.EXPO_PUBLIC_WEBVIEW_URI ||
+        "https://comuline-web.vercel.app/"
+      }
     />
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
