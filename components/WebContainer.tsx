@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { ScrollView, RefreshControl, View } from "react-native";
+import { ScrollView, RefreshControl } from "react-native";
 import RNWebView, {
   WebViewMessageEvent,
   WebViewNavigation,
@@ -54,39 +54,36 @@ const WebContainer = (props: WebContainerProps) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        style={{}}
-        contentContainerStyle={{ flex: 1 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            enabled={refresherEnabled}
-            onRefresh={() => {
-              triggerRefresh();
-              webViewRef?.current?.reload(); // Use optional chaining
-            }}
-          />
-        }
-      >
-        <RNWebView
-          onMessage={props.onMessage}
-          onScroll={handleScroll}
-          ref={webViewRef}
-          scalesPageToFit
-          javaScriptEnabled
-          domStorageEnabled
-          pullToRefreshEnabled
-          cacheEnabled={props.cacheEnabled}
-          cacheMode="LOAD_DEFAULT"
-          source={{ uri: url }}
-          startInLoadingState
-          onError={onLoadingError}
-          onHttpError={handleHttpError}
-          onNavigationStateChange={onNavigationStateChange}
+    <ScrollView
+      contentContainerStyle={{ flex: 1 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          enabled={refresherEnabled}
+          onRefresh={() => {
+            triggerRefresh();
+            webViewRef?.current?.reload(); // Use optional chaining
+          }}
         />
-      </ScrollView>
-    </View>
+      }
+    >
+      <RNWebView
+        onMessage={props.onMessage}
+        onScroll={handleScroll}
+        ref={webViewRef}
+        scalesPageToFit
+        javaScriptEnabled
+        domStorageEnabled
+        pullToRefreshEnabled
+        cacheEnabled={props.cacheEnabled}
+        cacheMode="LOAD_DEFAULT"
+        source={{ uri: url }}
+        startInLoadingState
+        onError={onLoadingError}
+        onHttpError={handleHttpError}
+        onNavigationStateChange={onNavigationStateChange}
+      />
+    </ScrollView>
   );
 };
 

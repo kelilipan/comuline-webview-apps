@@ -1,4 +1,9 @@
 import { WebViewMessageEvent } from "react-native-webview";
+import { StatusBar } from "expo-status-bar";
+
+import dayjs from "dayjs";
+import { useEffect } from "react";
+
 import notifee, {
   TimestampTrigger,
   TriggerType,
@@ -6,9 +11,9 @@ import notifee, {
   AndroidNotificationSetting,
   Notification,
 } from "@notifee/react-native";
-import dayjs from "dayjs";
-import { useEffect } from "react";
 import WebContainer from "@/components/WebContainer";
+import { styles } from "@/styles/main";
+import { View } from "react-native";
 
 interface Schedule {
   id: string;
@@ -125,13 +130,17 @@ export default function Index() {
   useEffect(() => {
     requestAlarmSetings();
   }, []);
+
   return (
-    <WebContainer
-      onMessage={handleMessage}
-      url={
-        process.env.EXPO_PUBLIC_WEBVIEW_URI ||
-        "https://comuline-web.vercel.app/"
-      }
-    />
+    <View style={[styles.container]}>
+      <WebContainer
+        onMessage={handleMessage}
+        url={
+          process.env.EXPO_PUBLIC_WEBVIEW_URI ||
+          "https://comuline-web.vercel.app/"
+        }
+      />
+      <StatusBar />
+    </View>
   );
 }
