@@ -133,6 +133,7 @@ export default function Index() {
 
   return (
     <View style={[styles.container]}>
+      <StatusBar style="dark" />
       <WebContainer
         onMessage={handleMessage}
         url={
@@ -140,7 +141,6 @@ export default function Index() {
           "https://comuline-web.vercel.app/"
         }
       />
-      <StatusBar />
     </View>
   );
 }
