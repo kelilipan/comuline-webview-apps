@@ -13,7 +13,8 @@ import notifee, {
 } from "@notifee/react-native";
 import WebContainer from "@/components/WebContainer";
 import { styles } from "@/styles/main";
-import { View } from "react-native";
+import { SafeAreaView, View } from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 interface Schedule {
   id: string;
@@ -130,17 +131,18 @@ export default function Index() {
   useEffect(() => {
     requestAlarmSetings();
   }, []);
+  const colorScheme = useColorScheme();
+  const themeContainerStyle =
+    colorScheme === "light" ? styles.lightContainer : styles.darkContainer;
 
   return (
-    <View style={[styles.container]}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={[styles.container, themeContainerStyle]}>
+      <StatusBar translucent />
+
       <WebContainer
         onMessage={handleMessage}
-        url={
-          process.env.EXPO_PUBLIC_WEBVIEW_URI ||
-          "https://comuline-web.vercel.app/"
-        }
+        url={"https://comuline-web.vercel.app/"}
       />
-    </View>
+    </SafeAreaView>
   );
 }
